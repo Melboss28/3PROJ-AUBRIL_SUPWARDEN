@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0.8
+    restart: always
+    # command:
+    #   - --auth
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+    #   MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+    # env_file: .env
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./API
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+
+  web:
+    build:
+      context: ./WEB
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  mongodb_data:
