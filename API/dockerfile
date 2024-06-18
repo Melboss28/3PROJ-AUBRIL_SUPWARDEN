@@ -1,0 +1,12 @@
+FROM node:21
+# Outils nécessaires pour la compilation
+RUN apt-get update && apt-get install -y python3 build-essential && apt-get clean
+WORKDIR /app
+COPY package*.json ./
+# Installer les dépendances sans modules natifs
+RUN npm install
+# Recompiler les modules natifs
+RUN npm rebuild bcrypt --build-from-source
+COPY . .
+EXPOSE 3001
+CMD ["npm", "start"]
