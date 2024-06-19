@@ -1,0 +1,23 @@
+.vertical-navbar {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    padding-top: 20px;
+  }
+  
+  .vertical-navbar a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    display: block;
+  }
+  
+  .vertical-navbar a:hover {
+    background-color: #575757;
+    color: white;
+  }
+  

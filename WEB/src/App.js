@@ -1,32 +1,25 @@
-// src/App.js
-import React, { useState } from 'react';
-import LoginForm from './components/LoginForm';
-import SignUpForm from './components/SignUpForm';
 import './App.css';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import HomeRouter from './pages/home/HomeRouter';
+import AppRouter from './pages/app/AppRouter';
+import AuthRouter from './pages/auth/AuthRouter';
+import Error from './_utils/Error';
+import AuthGuard from './_helpers/AuthGuard';
 
 function App() {
-  const [isLogin, setIsLogin] = useState(true);
-
   return (
     <div className="App">
-      {isLogin ? (
-        <LoginForm />
-      ) : (
-        <SignUpForm />
-      )}
-      <div className="toggle-container">
-        {isLogin ? (
-          <p>
-            Vous n'avez pas de compte ?{' '}
-            <button onClick={() => setIsLogin(false)} className="toggle-button">S'inscrire</button>
-          </p>
-        ) : (
-          <p>
-            Vous avez déjà un compte ?{' '}
-            <button onClick={() => setIsLogin(true)} className="toggle-button">Se connecter</button>
-          </p>
-        )}
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/*" element={<HomeRouter />} />
+          <Route path="/app/*" element={
+            <AuthGuard>
+              <AppRouter/>
+            </AuthGuard>
+          } />
+          <Route path="/auth/*" element={<AuthRouter />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
