@@ -1,63 +1,51 @@
-/* src/VerticalNavbar.css */
+/* src/components/VerticalNavbar.css */
 .vertical-navbar {
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background-color: #1E90FF;
-  color: #FFFFFF;
+  height: 100vh;
+  background-color: #1E90FF; /* Bleu Sécurité */
   transition: width 0.3s ease-in-out;
-}
-
-.vertical-navbar.open {
-  width: 200px;
+  overflow: hidden;
 }
 
 .vertical-navbar.closed {
   width: 50px;
 }
 
+.vertical-navbar.open {
+  width: 200px;
+}
+
 .toggle-button {
-  background-color: transparent;
+  background: none;
   border: none;
-  color: #FFFFFF;
-  font-size: 18px;
+  color: #FFFFFF; /* Blanc */
+  padding: 10px;
   cursor: pointer;
-  margin: 10px;
-  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .navbar-links {
-  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
 }
 
 .navbar-links a {
-  display: block;
-  padding: 10px 15px;
+  color: #FFFFFF; /* Blanc */
   text-decoration: none;
-  font-size: 18px;
-  color: #FFFFFF;
-  transition: background-color 0.3s ease-in-out;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  transition: background 0.3s ease-in-out;
 }
 
 .navbar-links a:hover {
-  background-color: #32CD32;
-  color: #FFFFFF;
+  background-color: #0056b3; /* Couleur de survol */
 }
 
-/* Styles pour le contenu principal quand la navbar est fermée */
-.App {
-  transition: margin-left 0.3s ease-in-out;
-}
-
-.App .content {
-  padding: 20px;
-}
-
-.App.open .content {
-  margin-left: 200px;
-}
-
-.App.closed .content {
-  margin-left: 50px;
+.icon {
+  width: 24px;
+  height: 24px;
 }
