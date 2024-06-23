@@ -11,7 +11,11 @@
 }
 
 .vertical-navbar.open {
-  width: 200px;
+  width: 150px;
+}
+
+.vertical-navbar.open .icon {
+  margin-right: 10px;
 }
 
 .toggle-button {
@@ -23,7 +27,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
 }
 
 .navbar-links {

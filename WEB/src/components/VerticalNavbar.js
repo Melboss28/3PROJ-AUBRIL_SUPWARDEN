@@ -14,11 +14,11 @@ const VerticalNavbar = ({ isOpen, setIsOpen }) => {
         </svg>
       </button>
       <div className="navbar-links">
-        <a href="#trousseaux">
+        <a href="#home">
           <svg className="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 4a4 4 0 110 8 4 4 0 010-8zm0-2a6 6 0 100 12A6 6 0 0012 2zm5.47 9.12a1 1 0 00-1.34 1.5l2.45 2.45a1 1 0 101.41-1.41l-2.45-2.45a1 1 0 00-.07-.09zM17.58 14l-3 3h-.79v1.79l-2.34 2.34a1 1 0 101.41 1.41l2.34-2.34H17a1 1 0 000-2h-1.79l3-3a1 1 0 00-1.41-1.41z" />
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
           </svg>
-          {isOpen && <span>Trousseaux</span>}
+          {isOpen && <span>Home</span>}
         </a>
         <a href="#services">
           <svg className="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
