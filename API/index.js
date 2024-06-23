@@ -19,9 +19,9 @@ const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'Common Chest',
+            title: 'SUPWARDEN',
             version: '1.0.0',
-            description: 'Documentation API CommonChest',
+            description: 'Documentation API SUPWARDEN',
         },
         servers: [
             {
