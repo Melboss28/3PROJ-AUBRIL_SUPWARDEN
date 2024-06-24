@@ -6,9 +6,9 @@ const swaggerUi = require('swagger-ui-express');
 const socketIO = require('socket.io');
 
 const mongoose = require('mongoose');
-mongoose.connect(process.env.URI);
+mongoose.connect('mongodb://localhost:27017/supwarden');
 
-const port = process.env.PORT;
+const port = 3001;
 const app = express();
 
 app.use(cors());
