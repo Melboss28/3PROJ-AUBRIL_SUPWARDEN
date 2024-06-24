@@ -75,6 +75,7 @@ router.post('/login', async (req, res) => {
         };
 
         // Créer et renvoyer un jeton JWT contenant les informations de l'utilisateur
+       const token = jwt.sign(userInfo, 'ONCzRs3kqu!yF?wH', { expiresIn: '5h' });
         res.json({ token });
     } catch (error) {
         console.error(error);
