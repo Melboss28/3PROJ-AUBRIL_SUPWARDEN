@@ -56,9 +56,11 @@ app.listen(port, () => {
 
 const Message = require('./models/message');
 
-const io = socketIO(httpsServer, {
+const server = app.listen(3002);
+
+const io = socketIO(server, {
     cors: {
-      origin: [process.env.SOCKET_CLIENT_URL, process.env.SOCKET_CLIENT_URL2],
+      origin: "http://localhost:3000",
       methods: ["GET", "POST"],
     },
   });
