@@ -39,7 +39,7 @@ function generatePassword(length, minUpper, minLower, minNumbers, minSpecial, ex
     return password.split('').sort(() => 0.5 - Math.random()).join('');
 }
 
-app.post('/generate-password', (req, res) => {
+router.post('/generate-password', (req, res) => {
     const { length, minUpper, minLower, minNumbers, minSpecial, excludeAmbiguous } = req.body;
     const password = generatePassword(length, minUpper, minLower, minNumbers, minSpecial, excludeAmbiguous);
     res.json({ password });

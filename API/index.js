@@ -1,6 +1,6 @@
 const express = require('express');
 const userRoutes = require('./routes/userRoutes');
-const userRoutes = require('./routes/toolRoutes');
+const toolRoutes = require('./routes/toolRoutes');
 const cors = require('cors');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
