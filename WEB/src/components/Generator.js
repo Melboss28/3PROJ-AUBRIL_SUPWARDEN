@@ -42,7 +42,7 @@ const Generator = () => {
             <div className='slider-container'>
                 <label>
                     Longueur: {length}
-                    <input type="range" min="6" max="20" value={length} onChange={(e) => setLength(e.target.value)} />
+                    <input type="range" min="6" max="32" value={length} onChange={(e) => setLength(e.target.value)} />
                 </label>
             </div>
             <div className='slider-container'>
