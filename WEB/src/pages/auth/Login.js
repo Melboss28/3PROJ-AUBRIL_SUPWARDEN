@@ -8,10 +8,7 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <VerticalNavbar isOpen={isOpen} setIsOpen={setIsOpen} />
-      <div className={`main-content ${isOpen ? 'open' : 'closed'}`}>
-        <LoginForm />
-      </div>
+      <LoginForm />
     </div>
   );
 };
