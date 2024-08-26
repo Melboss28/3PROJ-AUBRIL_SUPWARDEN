@@ -1,0 +1,22 @@
+.page {
+    display: flex;
+    width: 100%;
+    background-color: #F0F2F5;
+}
+  
+.main-content {
+    flex: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 200px;
+}
+  
+.main-content.closed {
+    margin-left: 100px;
+}
+
+.account{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+}

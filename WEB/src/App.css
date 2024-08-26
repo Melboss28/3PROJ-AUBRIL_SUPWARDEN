@@ -3,17 +3,3 @@
   height: 100vh;
   width: 100%;
 }
-
-.main-content {
-  flex: 1;
-  padding: 20px;
-  transition: margin-left 0.3s ease-in-out;
-}
-
-.main-content.closed {
-  margin-left: 50px;
-}
-
-.main-content.open {
-  margin-left: 200px;
-}

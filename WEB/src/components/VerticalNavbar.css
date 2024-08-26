@@ -1,5 +1,5 @@
-/* src/components/VerticalNavbar.css */
 .vertical-navbar {
+  position: fixed;
   height: 100vh;
   background-color: #1E90FF; /* Bleu Sécurité */
   transition: width 0.3s ease-in-out;
@@ -10,12 +10,12 @@
   width: 50px;
 }
 
-.vertical-navbar.open {
-  width: 150px;
+.vertical-navbar.closed .category-title{
+  display: none;
 }
 
-.vertical-navbar.open .icon {
-  margin-right: 10px;
+.vertical-navbar.open {
+  width: 200px;
 }
 
 .toggle-button {
@@ -35,6 +35,21 @@
   margin-top: 20px;
 }
 
+.category {
+  margin-bottom: 10px;
+}
+
+.category-title {
+  color: #FFFFFF; /* Blanc */
+  font-size: 14px; /* Taille des sous-titres */
+  padding: 8px 15px; /* Espacement */
+  background-color: #0056b3; /* Couleur de fond pour le titre */
+}
+
+.category-title:first-letter {
+  text-transform: uppercase; /* Première lettre en majuscule */
+}
+
 .navbar-links a {
   color: #FFFFFF; /* Blanc */
   text-decoration: none;
@@ -51,4 +66,6 @@
 .icon {
   width: 24px;
   height: 24px;
+  margin-right: 10px;
+  filter: invert(1);
 }

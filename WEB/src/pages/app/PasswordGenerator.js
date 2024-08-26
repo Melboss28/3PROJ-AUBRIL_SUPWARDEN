@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import VerticalNavbar from '../../components/VerticalNavbar';
-import './PasswordGenerator.css';
-import Generator from '../../components/Generator';
+import './passwordGenerator.css';
+import Generator from '../../components/app/Generator';
 
 const PasswordGenerator = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="PasswordGenerator-page">

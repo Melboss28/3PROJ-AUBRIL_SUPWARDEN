@@ -1,6 +1,9 @@
 const express = require('express');
+const authMiddleware = require('../JWT/authMiddleware');
 
 const router = express.Router();
+
+router.use(authMiddleware); // Appliquer le middleware d'authentification
 
 function generatePassword(length, minUpper, minLower, minNumbers, minSpecial, excludeAmbiguous) {
     const upperCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

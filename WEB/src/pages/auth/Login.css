@@ -1,6 +1,8 @@
 .login-page {
-  display: flex;
   width: 100%;
   background-color: #F0F2F5;
-  justify-content: center;
+}
+
+.change{
+  text-align: center;
 }

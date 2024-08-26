@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
-import SignUpForm from '../../components/SignUpForm';
-import VerticalNavbar from '../../components/VerticalNavbar';
-import './Login.css';
+import SignUpForm from '../../components/auth/SignUpForm';
+import './signup.css';
+import Header from '../../components/home/Header';
 
 const SignUp = () => {
-    const [isOpen, setIsOpen] = useState(true);
     
     return (
-        <div className="login-page">
-            <VerticalNavbar isOpen={isOpen} setIsOpen={setIsOpen} />
-            <div className={`main-content ${isOpen ? 'open' : 'closed'}`}>
+        <div className="signup-page">
+            <Header/>
             <SignUpForm />
-            </div>
-      </div>
+            <p className='change'>Vous avez déjà un compte ? <a href="/auth/login">Connectez-vous</a></p>
+        </div>
     );
 };
 

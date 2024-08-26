@@ -1,0 +1,28 @@
+.error{
+    width: 100%;
+}
+
+.error__content {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.error__content h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.error__content h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.error__content p {
+    font-size: 16px;
+    margin-bottom: 10px;
+}

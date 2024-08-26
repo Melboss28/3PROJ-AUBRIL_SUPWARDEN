@@ -1,0 +1,20 @@
+.AccountLink{
+    padding: 2rem;
+    max-width: 900px;
+    background-color: #fff;
+    border-radius: 1em;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+}
+
+.AccountLink h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.google .icon {
+    filter: none;
+    cursor: pointer;
+}

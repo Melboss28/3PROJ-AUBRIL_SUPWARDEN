@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import LoginForm from '../../components/LoginForm';
-import VerticalNavbar from '../../components/VerticalNavbar';
-import './Login.css';
+import LoginForm from '../../components/auth/LoginForm';
+import './login.css';
+import Header from '../../components/home/Header';
 
 const Login = () => {
-  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div className="login-page">
+      <Header/>
       <LoginForm />
+      <p className='change'>Vous n'avez pas de compte ? <a href="/auth/signup">Inscrivez-vous</a></p>
     </div>
   );
 };

@@ -1,0 +1,276 @@
+.element-details-container {
+    padding: 2rem;
+    max-width: 900px;
+    margin: auto;
+    background-color: #fff;
+    border-radius: 1em;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+}
+
+.element-details-container h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.element-details-container h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #444;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 0.25rem;
+}
+
+.element-details-container p,
+.element-details-container div {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: #555;
+}
+
+.element-details-container .section {
+    margin-bottom: 2rem;
+}
+
+.element-details-container .details-item {
+    margin-bottom: 1rem;
+}
+
+.element-details-container .details-item strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.element-details-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.element-details-container input,
+.element-details-container textarea,
+.element-details-container select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    background-color: #fff;
+}
+
+.element-details-container textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.element-details-container button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    background-color: #007bff;
+}
+
+.element-details-container button[type="submit"] {
+    background-color: #007bff;
+}
+
+.element-details-container button[type="button"] {
+    background-color: #6c757d;
+}
+
+.element-details-container button:hover {
+    opacity: 0.8;
+}
+
+.element-details-container .uri-field,
+.element-details-container .custom-field,
+.element-details-container .attachment {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.element-details-container .uri-field input,
+.element-details-container .custom-field input,
+.element-details-container .attachment input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.element-details-container .uri-field button,
+.element-details-container .custom-field button,
+.element-details-container .attachment button {
+    background-color: #dc3545;
+    border: none;
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.element-details-container .uri-field button:hover,
+.element-details-container .custom-field button:hover,
+.element-details-container .attachment button:hover {
+    background-color: #c82333;
+}
+
+.element-details-container .custom-field {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.element-details-container .custom-field .field-container {
+    flex: 1 1 calc(50% - 1rem);
+    margin-bottom: 1rem;
+}
+
+.element-details-container .custom-field .field-container label {
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.element-details-container .custom-field .field-container input,
+.element-details-container .custom-field .field-container select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.element-details-container .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.element-details-container .checkbox-label input {
+    cursor: pointer;
+}
+
+.element-details-container .uri-list,
+.element-details-container .custom-field-list,
+.element-details-container .attachment-list {
+    margin-top: 1rem;
+}
+
+.element-details-container .uri-list li,
+.element-details-container .custom-field-list div,
+.element-details-container .attachment-list div {
+    margin-bottom: 0.5rem;
+}
+
+.element-details-container .uri-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.element-details-container .uri-list li {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.element-details-container .custom-field-list div {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.element-details-container .attachment-list div {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.element-details-container ul {
+    padding-left: 1.5rem;
+    margin: 0;
+    list-style: none;
+}
+
+.element-details-container ul li {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.element-details-container .attachment-item {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.element-details-container .sensitive-indicator {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.element-details-container .buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.element-details-container button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+.element-details-container button.edit-button {
+    background-color: #007bff;
+}
+.element-details-container button.cancel-button {
+    background-color: #6c757d;
+}
+.element-details-container button:hover {
+    opacity: 0.8;
+}
+
+.name-edit input {
+    font-size: 32px;
+    color: #333333;
+    font-weight: 600;
+}
+
+.name-display .icon {
+    filter: none;
+    padding: 0.5rem;
+    border-radius: 10px;
+}
+
+.name-display .icon:hover {
+    cursor: pointer;
+    background-color: #e8e8e8;
+}
+.name-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

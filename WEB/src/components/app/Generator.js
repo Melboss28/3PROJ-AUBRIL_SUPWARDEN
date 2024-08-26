@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './generator.css';
+import { accountService } from '../../_services/account.service';
 
 const Generator = () => {
     const [length, setLength] = useState(12);
@@ -12,14 +13,21 @@ const Generator = () => {
     const [password, setPassword] = useState('');
 
     const generatePassword = () => {
-        axios.post('http://localhost:3001/api/tool/generate-password', {
-            length,
-            minUpper,
-            minLower,
-            minNumbers,
-            minSpecial,
-            excludeAmbiguous
-        })
+        axios.post('http://localhost:3001/api/tool/generate-password',
+            {
+                length,
+                minUpper,
+                minLower,
+                minNumbers,
+                minSpecial,
+                excludeAmbiguous
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accountService.getToken()}`
+                }
+            }
+        )
         .then(response => {
             setPassword(response.data.password);
         })

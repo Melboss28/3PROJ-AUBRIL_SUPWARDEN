@@ -1,13 +1,23 @@
+// index.js
 const express = require('express');
-const userRoutes = require('./routes/userRoutes');
-const toolRoutes = require('./routes/toolRoutes');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const socketIO = require('socket.io');
+const http = require('http');
+const { getGFS, initializeGFS } = require('./gfsSetup'); // Importer depuis gfsSetup.js
+const userRoutes = require('./routes/userRoutes');
+const toolRoutes = require('./routes/toolRoutes');
+const trousseauRoutes = require('./routes/trousseauRoutes');
+const elementRoutes = require('./routes/elementRoutes');
+const upload = require('./upload');
 
-const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/supwarden');
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/supwarden', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
 
 const port = 3001;
 const app = express();
@@ -15,7 +25,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configuration de Swagger
+// Swagger configuration
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
@@ -26,7 +36,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `${process.env.URL}${port}`,
+                url: `http://localhost:${port}`,
                 description: 'Serveur API',
             },
         ],
@@ -43,62 +53,85 @@ const swaggerOptions = {
     apis: ['./routes/*.js'],
 };
 
-// Initialisation de swagger-jsdoc
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-// Route pour la documentation Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use('/api/user', userRoutes);
 app.use('/api/tool', toolRoutes);
+app.use('/api/trousseau', trousseauRoutes);
+app.use('/api/element', elementRoutes);
 
-app.listen(port, () => {
-    console.log(`API is running on port ${port}`);
-});
-
-const Message = require('./models/message');
-
-const server = app.listen(3002);
+// Socket.IO configuration
+const server = http.createServer(app);
 
 const io = socketIO(server, {
     cors: {
-      origin: "http://localhost:3000",
-      methods: ["GET", "POST"],
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"],
     },
-  });
-  
-  io.on("connection", (socket) => {
+});
+
+const Message = require('./models/message');
+const User = require('./models/user');
+const Conversation = require('./models/conversation');
+
+app.get('/api/conversations/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const conversations = await Conversation.find({ participants: userId }).populate('participants', 'pseudo');
+        res.json(conversations);
+    } catch (err) {
+        res.status(500).json({ error: 'Erreur lors de la récupération des conversations' });
+    }
+});
+
+io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
-  
+
+    socket.on("get_conversations", async (userId) => {
+        try {
+            const conversations = await Conversation.find({ participants: userId }).populate('participants', 'pseudo');
+            socket.emit("conversations", conversations);
+        } catch (err) {
+            console.error("Error fetching conversations:", err);
+        }
+    });
+
     socket.on("join_room", async (data) => {
-      try {
-        socket.join(data);
-        console.log(`User with ID: ${socket.id} joined room: ${data}`);
-        // Récupérer tous les messages de la salle de discussion depuis la base de données
-        const messageHistory = await Message.find({ room: data });
-        // Envoyer l'historique des messages de l'utilisateur rejoignant la salle
-        socket.emit("message_history", messageHistory);
-        console.log(messageHistory);
-      } catch (err) {
-        console.error("Error fetching message history:", err);
-      }
+        try {
+            socket.join(data.room);
+            console.log(`User with ID: ${socket.id} joined room: ${data.room}`);
+            const messageHistory = await Message.find({ room: data.room });
+            socket.emit("message_history", messageHistory);
+        } catch (err) {
+            console.error("Error fetching message history:", err);
+        }
     });
-  
+
     socket.on("send_message", async (data) => {
-      // Créer une instance du modèle Message avec les données du message
-      const newMessage = new Message({
-        room: data.room,
-        author: data.author,
-        content: data.content,
-        time: data.time,
-      });
-      // Enregistrer le message dans la base de données
-      await newMessage.save();
-      socket.to(data.room).emit("receive_message", data);
-      console.log(data);
+        const newMessage = new Message({
+            room: data.room,
+            author: data.author,
+            content: data.content,
+            time: data.time,
+        });
+        await newMessage.save();
+        socket.to(data.room).emit("receive_message", data);
+        console.log(data);
     });
-  
+
     socket.on("disconnect", () => {
-      console.log("User Disconnected", socket.id);
+        console.log("User Disconnected", socket.id);
     });
 });
+
+server.listen(port, async () => {
+    try {
+        await initializeGFS; // Assurez-vous que GridFS est initialisé
+        console.log(`API and Socket.IO server are running on port ${port}`);
+    } catch (error) {
+        console.error('Error initializing GridFS:', error);
+    }
+});
+
+module.exports = { getGFS, initializeGFS };
