@@ -7,6 +7,9 @@ import sharepng from '../../img/share.png';
 import refusepng from '../../img/refuse.png';
 import acceptpng from '../../img/accept.png';
 import { useNavigate } from 'react-router-dom';
+import groupepng from '../../img/groupe.png';
+import exportpng from '../../img/export.png';
+import importpng from '../../img/import.png';
 
 const TrousseauxList = () => {
     let navigate = useNavigate();
@@ -20,6 +23,14 @@ const TrousseauxList = () => {
     const [newShareName, setNewShareName] = useState('');
     const [closingModal, setClosingModal] = useState(false);
     const [selectedTrousseau, setSelectedTrousseau] = useState(null);
+    const [userPseudos, setUserPseudos] = useState({});
+    const [importModalIsOpen, setImportModalIsOpen] = useState(false);
+    const [importFile, setImportFile] = useState(null);
+    const [errorMy, setErrorMy] = useState('');
+    const [errorWm, setErrorWm] = useState('');
+    const [errorShare, setErrorShare] = useState('');
+    const [errorAdd, setErrorAdd] = useState('');
+    const [errorImport, setErrorImport] = useState('');
 
     useEffect(() => {
         const fetchMyTrousseaux = async () => {
@@ -33,7 +44,7 @@ const TrousseauxList = () => {
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching trousseaux:', error);
-                alert(error.response.data.error);
+                setErrorMy(error.response.data.error);
             } finally {
                 setLoading(false);
             }
@@ -41,16 +52,28 @@ const TrousseauxList = () => {
 
         const fetchTrousseauxWithMe = async () => {
             try {
+                // Fetch trousseaux shared with me
                 const response = await axios.get('http://localhost:3001/api/trousseau/shared-with-me', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                setTrousseauxWithMe(response.data);
-                setLoading(false);
+                const trousseauxWithMeData = response.data;
+    
+                // Fetch pseudos for each owner
+                const pseudos = {};
+                for (const trousseau of trousseauxWithMeData) {
+                    if (!pseudos[trousseau.owner]) {
+                        const pseudo = await fetchUserPseudo(trousseau.owner);
+                        pseudos[trousseau.owner] = pseudo;
+                    }
+                }
+    
+                setTrousseauxWithMe(trousseauxWithMeData);
+                setUserPseudos(pseudos);
             } catch (error) {
                 console.error('Error fetching trousseaux with me:', error);
-                alert(error.response.data.error);
+                setErrorWm(error.response.data.error);
             } finally {
                 setLoading(false);
             }
@@ -75,7 +98,7 @@ const TrousseauxList = () => {
             setRefresh(!refresh);
         } catch (error) {
             console.error('Error adding trousseau:', error);
-            alert(error.response.data.error);
+            setErrorAdd(error.response.data.error);
         }
     };
 
@@ -90,7 +113,7 @@ const TrousseauxList = () => {
             setRefresh(!refresh);
         } catch (error) {
             console.error('Error deleting trousseau:', error);
-            alert(error.response.data.error);
+            setErrorMy(error.response.data.error);
         }
     };
 
@@ -109,7 +132,7 @@ const TrousseauxList = () => {
             setRefresh(!refresh);
         } catch (error) {
             console.error('Error sharing trousseau:', error);
-            alert(error.response.data.error);
+            setErrorShare(error.response.data.error);
         }
     };
 
@@ -124,7 +147,7 @@ const TrousseauxList = () => {
             setRefresh(!refresh);
         } catch (error) {
             console.error('Error accepting invitation:', error);
-            alert(error.response.data.error);
+            setErrorWm(error.response.data.error);
         }
     };
 
@@ -139,7 +162,7 @@ const TrousseauxList = () => {
             setRefresh(!refresh);
         } catch (error) {
             console.error('Error refusing invitation:', error);
-            alert(error.response.data.error);
+            setErrorWm(error.response.data.error);
         }
     };
 
@@ -155,10 +178,85 @@ const TrousseauxList = () => {
         navigate(`/app/trousseaux/${id}`);
     };
 
+    const fetchUserPseudo = async (userId) => {
+        try {
+            const response = await axios.get(`http://localhost:3001/api/user/pseudo/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return response.data.pseudo;
+        } catch (error) {
+            console.error('Error fetching user pseudo:', error);
+            return 'Unknown'; // Fallback if there's an error
+        }
+    };
+
+    const handleExport = async (format) => {
+        try {
+            const response = await axios.get(`http://localhost:3001/api/trousseau/transfer/export?format=${format}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                responseType: 'blob',
+            });
+            const blob = new Blob([response.data], { type: response.headers['content-type'] });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `trousseaux_export.${format}`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error('Error exporting trousseaux:', error);
+        }
+    };
+
+    const handleFileChange = (event) => {
+        setImportFile(event.target.files[0]);
+    };
+
+    const handleImport = async () => {
+        if (!importFile) {
+            setErrorImport('Please select a file to import.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', importFile);
+
+        try {
+            await axios.post('http://localhost:3001/api/trousseau/transfer/import', formData, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            setImportFile(null);
+            setImportModalIsOpen(false);
+            setRefresh(!refresh);
+        } catch (error) {
+            console.error('Error importing file:', error);
+            setErrorImport(error.response.data.error);
+        }
+    };
+
     return (
         <>
             <div className='mytrousseaux'>
-                <h1>Mes Trousseaux</h1>
+                <h1>Mes Trousseaux
+                    <button className='export-button' onClick={() => handleExport('json')}>
+                        <img src={exportpng} alt="Export JSON" title="Exporter" />
+                    </button>
+                    {/* <button className='export-button' onClick={() => handleExport('csv')}>
+                        <img src={exportpng} alt="Export CSV" title="Export as CSV" />
+                    </button> */}
+                    <button  className='export-button' onClick={() => setImportModalIsOpen(true)}>
+                        <img src={importpng} alt="Import" title='Importer'/>
+                    </button>
+                </h1>
+                {errorMy && <p style={{ color: 'red' }}>{errorMy}</p>}
                 {loading ? (
                     <p>Loading...</p>
                 ) : trousseaux.length === 0 ? (
@@ -169,9 +267,9 @@ const TrousseauxList = () => {
                             {trousseaux.map((trousseau, index) => (
                                 <li className='onetrousseau' key={index} onClick={() => handleRedirect(trousseau._id)}>
                                     {trousseau.name}
-                                    {trousseau.isShared && <span> (shared)</span>}
-                                    <button onClick={(e) => { e.stopPropagation(); setShareModalIsOpen(true); setSelectedTrousseau(trousseau._id); }}><img src={sharepng} alt="Share" /></button>
-                                    <button onClick={(e) => handleDeleteTrousseau(trousseau._id, e)}><img src={poubellepng} alt="Delete" /></button>
+                                    {trousseau.isShared && <img className='icon' src={groupepng} alt="groupe"/>}
+                                    <button onClick={(e) => { e.stopPropagation(); setShareModalIsOpen(true); setSelectedTrousseau(trousseau._id); }}><img src={sharepng} alt="Share" title='Partager'/></button>
+                                    <button onClick={(e) => handleDeleteTrousseau(trousseau._id, e)}><img src={poubellepng} alt="Delete" title='Supprimer'/></button>
                                 </li>
                             ))}
                         </ul>
@@ -198,6 +296,7 @@ const TrousseauxList = () => {
                         </label>
                         <button type="submit">Add</button>
                         <button onClick={() => handleCloseModal(setAddModalIsOpen)}>Cancel</button>
+                        {errorAdd && <p style={{ color: 'red' }}>{errorAdd}</p>}
                     </form>
                 </Modal>
                 <Modal
@@ -219,11 +318,20 @@ const TrousseauxList = () => {
                         </label>
                         <button type="submit">Share</button>
                         <button onClick={() => handleCloseModal(setShareModalIsOpen)}>Cancel</button>
+                        {errorShare && <p style={{ color: 'red' }}>{errorShare}</p>}
                     </form>
+                </Modal>
+                <Modal isOpen={importModalIsOpen} onRequestClose={() => setImportModalIsOpen(false)}>
+                <h2>Import Trousseaux</h2>
+                    <input type="file" onChange={handleFileChange} />
+                    {errorImport && <p style={{ color: 'red' }}>{errorImport}</p>}
+                    <button onClick={handleImport}>Import</button>
+                    <button onClick={() => setImportModalIsOpen(false)}>Cancel</button>
                 </Modal>
             </div>
             <div className='trousseauxsharedwithme'>
                 <h1>Trousseaux Partagé avec moi</h1>
+                {errorWm && <p style={{ color: 'red' }}>{errorWm}</p>}
                 {loading ? (
                     <p>Loading...</p>
                 ) : trousseauxWithMe.length === 0 ? (
@@ -232,9 +340,9 @@ const TrousseauxList = () => {
                     <>
                         <ul>
                             {trousseauxWithMe.map((trousseau, index) => (
-                                <li className='onetrousseau' key={index} onClick={() => handleRedirect(trousseau._id)}>
-                                    <p className={trousseau.invitation}>{trousseau.name}<span>{trousseau.invitation}</span><span className='permission'>{trousseau.permission}</span></p>
-                                    <p>Propriétaire: {trousseau.owner}</p>
+                                <li className={`onetrousseau ${trousseau.invitation === 'pending' ? 'pending' : ''}`} key={index} onClick={trousseau.invitation !== 'pending' ? () => navigate(`/app/trousseaux/${trousseau._id}`) : undefined}>
+                                    <p className={trousseau.invitation}>{trousseau.name}<span>{trousseau.invitation}</span></p>
+                                    <p>Propriétaire: {userPseudos[trousseau.owner] || 'Loading...'}</p>
                                     {trousseau.invitation === 'pending' ? (
                                         <div className='choice'>
                                             <button className='accept' onClick={(e) => handleAcceptInvitation(trousseau._id, e)}><img src={acceptpng} alt="Accept" /></button>
@@ -242,7 +350,7 @@ const TrousseauxList = () => {
                                         </div>
                                     ) : (
                                         <div className='choice'>
-                                            <button className='leave' onClick={(e) => handleRefuseInvitation(trousseau._id, e)}><img src={refusepng} alt="Leave" /></button>
+                                            <button className='leave' onClick={(e) => handleRefuseInvitation(trousseau._id, e)}><img src={refusepng} alt="Leave" title='Quitter'/></button>
                                         </div>
                                     )}
                                 </li>

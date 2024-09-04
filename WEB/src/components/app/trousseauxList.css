@@ -1,6 +1,7 @@
 ul{
     padding: 0;
     margin: 0;
+    margin-right: 10px;
     list-style: none;
     display: flex;
     flex-wrap: wrap;
@@ -25,8 +26,8 @@ ul{
 li button{
     margin: 0;
     background-color: transparent;
-    width: 20px;
-    height: 20px;
+    padding: 0;
+    margin-left: 10px;
 }
 
 li button:hover{
@@ -63,7 +64,6 @@ li button img{
     background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: flex-end;
-    align-items: center;
     z-index: 1000;
     animation: fadeIn 0.5s ease-out forwards;
 }
@@ -72,7 +72,6 @@ li button img{
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
-    width: 300px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transform: translateX(100%);
     animation: slideInFromRight 0.5s ease-out forwards;
@@ -107,4 +106,30 @@ li button img{
 
 .ModalContent.close {
     animation: slideOutToRight 0.5s ease-out forwards;
+}
+
+.onetrousseau .icon{
+    width: 24px;
+    height: 24px;
+    filter: none;
+    margin-left: 10px;
+    margin-right: 40px;
+    vertical-align: bottom;
+}
+
+.export-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+    padding: 0;
+}
+
+.export-button img {
+    width: 20px;
+    height: 20px;
+}
+
+.export-button:hover {
+    background-color: transparent;
 }

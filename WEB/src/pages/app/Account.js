@@ -5,6 +5,7 @@ import AccountEdit from '../../components/app/AccountEdit';
 import AccountPasswordEdit from '../../components/app/AccountPassword';
 import AccountDelete from '../../components/app/AccountDelete';
 import AccountLink from '../../components/app/AccountLink';
+import AccountPIN from '../../components/app/AccountPIN';
 
 const Account = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +20,7 @@ const Account = () => {
             <AccountPasswordEdit/>
             <AccountDelete/>
             <AccountLink/>
+            <AccountPIN/>
           </div>
         </div>
       </div>

@@ -4,14 +4,14 @@ services:
   mongodb:
     image: mongo:7.0.8
     restart: always
-    # command:
-    #   - --auth
-    # environment:
-    #   MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-    #   MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    command:
+      - --auth
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
       - mongodb_data:/data/db
-    # env_file: .env
+    env_file: .env
     ports:
       - 27017:27017
     healthcheck:

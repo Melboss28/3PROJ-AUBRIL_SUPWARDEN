@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
 import './VerticalNavbar.css';
 import trousseaupng from '../img/trousseau.png';
 import chatpng from '../img/chat.png';
@@ -9,7 +8,6 @@ import logoutpng from '../img/logout.png';
 import generatorpng from '../img/cadena.png';
 
 const VerticalNavbar = ({ isOpen, setIsOpen }) => {
-  let navigate = useNavigate()
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);

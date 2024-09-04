@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import HomeRouter from './pages/home/HomeRouter';
 import AppRouter from './pages/app/AppRouter';
 import AuthRouter from './pages/auth/AuthRouter';
-import Error from './_utils/Error';
 import AuthGuard from './_helpers/AuthGuard';
 
 function App() {

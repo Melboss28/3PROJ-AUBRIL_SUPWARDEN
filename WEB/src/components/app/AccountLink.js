@@ -11,11 +11,12 @@ const AccountLink = () => {
 
     const handleGoogleLoginSuccess = async (response) => {
         try {
-          const res = await axios.post('http://localhost:3001/api/user/google-link', { tokenId: response.credential }, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+            const res = await axios.post('http://localhost:3001/api/user/google-link', { tokenId: response.credential }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            setGoodMessage(res.data.message);
         } catch (error) {
           console.error('Erreur lors de la Laison Google', error);
           setErrorMessage(error.response.data.message);

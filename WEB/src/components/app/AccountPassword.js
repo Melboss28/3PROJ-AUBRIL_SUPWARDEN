@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './accountPassword.css';
-import { accountService } from '../../_services/account.service';
 
 const AccountPassword = () => {
     const [passwordData, setPasswordData] = useState({

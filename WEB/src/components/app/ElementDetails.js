@@ -5,12 +5,17 @@ import './elementDetails.css';
 import editpng from '../../img/edit.png';
 import backArrow from '../../img/backArrow.png';
 import { useNavigate } from 'react-router-dom';
+import { accountService } from '../../_services/account.service';
+import eyeIcon from '../../img/eye.png';
+import eyeSlashIcon from '../../img/eye-slash.png';
 
 const ElementDetails = () => {
     const { elementId } = useParams();
     const navigate = useNavigate();
     const { id } = useParams();
     const [element, setElement] = useState({});
+    const [members, setMembers] = useState([]);
+    const [owner, setOwner] = useState({});
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
     const [isEditingName, setIsEditingName] = useState(false);
@@ -25,8 +30,27 @@ const ElementDetails = () => {
         isSensitive: false
     });
     const [file, setFile] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
+        const fetchOneTrousseaux = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3001/api/trousseau/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                setMembers(response.data.members);
+                setOwner(response.data.owner);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching trousseaux:', error);
+                alert(error.response.data.error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         const fetchElement = async () => {
             try {
                 const response = await axios.get(`http://localhost:3001/api/element/${elementId}`, {
@@ -52,8 +76,9 @@ const ElementDetails = () => {
             }
         };
 
+        fetchOneTrousseaux();
         fetchElement();
-    }, [elementId]);
+    }, [elementId, id]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -233,7 +258,10 @@ const ElementDetails = () => {
                         ) : (
                             <div className="name-display">
                                 <h1>{element.name}</h1>
+                                {(owner._id === accountService.getTokenInfo().userId) ||
+                                (members.some(member => member.user._id === accountService.getTokenInfo().userId && member.permissions.includes('edit'))) ? (
                                 <img onClick={handleEditName} src={editpng} className='icon' alt="edit" />
+                                ) : null}
                             </div>
                         )}
 
@@ -311,7 +339,17 @@ const ElementDetails = () => {
 
                                 <div className="details-item">
                                     <h3>Password</h3>
-                                    <p>{element.password || "No password available"}</p>
+                                    <div className="password-field">
+                                        <p>{element.password ? (showPassword ? element.password : '●●●●●●●●') : 'No password available'}</p>
+                                        {element.password && (
+                                            <img
+                                                src={showPassword ? eyeSlashIcon : eyeIcon}
+                                                alt={showPassword ? "Hide password" : "Show password"}
+                                                className="eye-icon"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                            />
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="details-item">
@@ -352,14 +390,22 @@ const ElementDetails = () => {
                                     <p>{element.isSensitive ? "Yes" : "No"}</p>
                                 </div>
 
+                                {(owner._id === accountService.getTokenInfo().userId) ||
+                                (members.some(member => member.user._id === accountService.getTokenInfo().userId && member.permissions.includes('edit'))) ? (
                                 <button onClick={handleToggleEditing}>Edit</button>
+                                ) : null}
                             </div>
                         )}
 
                         <div className="attachment-management">
                             <h3>Pièces Jointes</h3>
+                            {(owner._id === accountService.getTokenInfo().userId) ||
+                                (members.some(member => member.user._id === accountService.getTokenInfo().userId && member.permissions.includes('edit'))) ? (
+                            <>
                             <input type="file" onChange={handleFileChange} />
                             <button type="button" onClick={handleAddAttachment}>Add Attachment</button>
+                            </>
+                            ) : null}
                             {formData.attachments.length > 0 && (
                                 <ul>
                                     {formData.attachments.map((attachment, index) => (
@@ -371,6 +417,9 @@ const ElementDetails = () => {
                                         </li>
                                     ))}
                                 </ul>
+                            )}
+                            {formData.attachments.length === 0 && (
+                                <p>No attachments available</p>
                             )}
                         </div>
                     </div>

@@ -6,7 +6,32 @@ const authMiddleware = require('../JWT/authMiddleware');
 const upload = require('../upload');
 const { getGFS } = require('../gfsSetup'); // Importer depuis gfsSetup.js
 const router = express.Router();
+require('dotenv').config();
 
+// Route pour obtenir un fichier à partir de GridFS
+/**
+ * @swagger
+ * /api/element/file/{filename}:
+ *   get:
+ *     summary: Obtenir un fichier
+ *     description: Récupérer un fichier stocké dans GridFS par son nom de fichier.
+ *     tags:
+ *       - element
+ *     parameters:
+ *       - name: filename
+ *         in: path
+ *         required: true
+ *         description: Nom du fichier à récupérer
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Fichier récupéré avec succès.
+ *       404:
+ *         description: Fichier non trouvé.
+ *       500:
+ *         description: Erreur lors de la récupération du fichier.
+ */
 router.get('/file/:filename', async (req, res) => {
     const { filename } = req.params;
     try {
@@ -29,6 +54,39 @@ router.get('/file/:filename', async (req, res) => {
 router.use(authMiddleware); // Apply authentication middleware
 
 // Route pour obtenir les éléments d'un trousseau spécifique
+/**
+ * @swagger
+ * /api/element/trousseau/{trousseauId}:
+ *   get:
+ *     summary: Obtenir les éléments d'un trousseau
+ *     description: Récupérer tous les éléments associés à un trousseau spécifique.
+ *     tags:
+ *       - element
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: trousseauId
+ *         in: path
+ *         required: true
+ *         description: ID du trousseau
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Liste des éléments du trousseau.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Element'
+ *       400:
+ *         description: ID du trousseau invalide.
+ *       404:
+ *         description: Trousseau non trouvé.
+ *       500:
+ *         description: Erreur lors de la récupération des éléments.
+ */
 router.get('/trousseau/:trousseauId', async (req, res) => {
     const { trousseauId } = req.params;
 
@@ -49,20 +107,116 @@ router.get('/trousseau/:trousseauId', async (req, res) => {
     }
 });
 
+const crypto = require('crypto');
+const algorithm = 'aes-256-cbc';
+const key = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
+
+function encrypt(text) {
+    const iv = crypto.randomBytes(16);
+    let cipher = crypto.createCipheriv(algorithm, key, iv);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return iv.toString('hex') + ':' + encrypted;
+}
+
+function decrypt(text) {
+    const textParts = text.split(':');
+    const iv = Buffer.from(textParts.shift(), 'hex');
+    const encryptedText = Buffer.from(textParts.join(':'), 'hex');
+    const decipher = crypto.createDecipheriv(algorithm, key, iv);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+}
+
 // Route pour ajouter un nouvel élément à un trousseau
+/**
+ * @swagger
+ * /api/element/trousseau/{trousseauId}:
+ *   post:
+ *     summary: Ajouter un nouvel élément à un trousseau
+ *     description: Ajouter un élément à un trousseau spécifique avec la possibilité de joindre un fichier.
+ *     tags:
+ *       - element
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: trousseauId
+ *         in: path
+ *         required: true
+ *         description: ID du trousseau
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nom de l'élément
+ *               username:
+ *                 type: string
+ *                 description: Nom d'utilisateur associé
+ *               password:
+ *                 type: string
+ *                 description: Mot de passe (sera chiffré)
+ *               uris:
+ *                 type: string
+ *                 description: Liste des URIs associées (au format JSON)
+ *               note:
+ *                 type: string
+ *                 description: Note associée à l'élément
+ *               customFields:
+ *                 type: string
+ *                 description: Champs personnalisés (au format JSON)
+ *               isSensitive:
+ *                 type: boolean
+ *                 description: Indique si l'élément est sensible
+ *       multipart/form-data:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             file:
+ *               type: string
+ *               format: binary
+ *     responses:
+ *       201:
+ *         description: Élément ajouté avec succès.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Element'
+ *       400:
+ *         description: ID du trousseau invalide ou données de l'élément manquantes.
+ *       404:
+ *         description: Trousseau non trouvé.
+ *       500:
+ *         description: Erreur lors de l'ajout de l'élément.
+ */
 router.post('/trousseau/:trousseauId', upload.single('file'), async (req, res) => {
     const { trousseauId } = req.params;
     const { name, username, password, uris, note, customFields, isSensitive } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(trousseauId)) {
-        return res.status(400).json({ message: 'Invalid Trousseau ID' });
+        return res.status(400).json({ error: 'Invalid Trousseau ID' });
+    }
+
+    if (!name) {
+        return res.status(400).json({ error: 'Nom requis' });
     }
 
     try {
         const trousseau = await Trousseau.findById(trousseauId);
         if (!trousseau) {
-            return res.status(404).json({ message: 'Trousseau not found' });
+            return res.status(404).json({ error: 'Trousseau not found' });
         }
+
+        const encryptedPassword = password ? encrypt(password) : null;
 
         // Gestion des fichiers attachés
         const attachments = req.file ? [{ filename: req.file.filename, fileId: req.file.id }] : [];
@@ -71,7 +225,7 @@ router.post('/trousseau/:trousseauId', upload.single('file'), async (req, res) =
             _id: new mongoose.Types.ObjectId(),
             name,
             username,
-            password,
+            password: encryptedPassword,
             uris: uris ? JSON.parse(uris) : [],
             note,
             customFields: customFields ? JSON.parse(customFields) : [],
@@ -85,147 +239,63 @@ router.post('/trousseau/:trousseauId', upload.single('file'), async (req, res) =
         res.status(201).json(savedElement);
     } catch (error) {
         console.error('Error adding element:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
 // Route pour supprimer un élément
+/**
+ * @swagger
+ * /api/element/{elementId}:
+ *   delete:
+ *     summary: Supprimer un élément
+ *     description: Supprimer un élément spécifique et ses fichiers attachés.
+ *     tags:
+ *       - element
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: elementId
+ *         in: path
+ *         required: true
+ *         description: ID de l'élément à supprimer
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Élément supprimé avec succès.
+ *       400:
+ *         description: ID de l'élément invalide.
+ *       404:
+ *         description: Élément non trouvé.
+ *       500:
+ *         description: Erreur lors de la suppression de l'élément.
+ */
 router.delete('/:elementId', async (req, res) => {
     const { elementId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(elementId)) {
-        return res.status(400).json({ message: 'Invalid Element ID' });
+        return res.status(400).json({ error: 'Invalid Element ID' });
     }
 
     try {
         const element = await Element.findById(elementId);
         if (!element) {
-            return res.status(404).json({ message: 'Element not found' });
+            return res.status(404).json({ error: 'Element not found' });
         }
 
-        // Suppression des fichiers attachés de GridFS
+        // Suppression des fichiers attachés
         const gfs = await getGFS();
-        if (element.attachments && element.attachments.length > 0) {
-            const fileIds = element.attachments.map(att => att.fileId);
-            for (const fileId of fileIds) {
-                await gfs.collection('uploads').deleteOne({ _id: new mongoose.Types.ObjectId(fileId) });
-            }
+        for (const attachment of element.attachments) {
+            await gfs.collection('uploads').deleteOne({ _id: mongoose.Types.ObjectId(attachment.fileId) });
         }
 
-        await Element.findByIdAndDelete(elementId);
+        await element.remove();
         res.status(200).json({ message: 'Element deleted successfully' });
     } catch (error) {
         console.error('Error deleting element:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
-
-// Route pour obtenir un élément spécifique
-router.get('/:elementId', async (req, res) => {
-    const { elementId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(elementId)) {
-        return res.status(400).json({ message: 'Invalid Element ID' });
-    }
-
-    try {
-        const element = await Element.findById(elementId);
-        if (!element) {
-            return res.status(404).json({ message: 'Element not found' });
-        }
-
-        res.status(200).json(element);
-    } catch (error) {
-        console.error('Error fetching element:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// Route pour mettre à jour un élément avec un fichier
-router.put('/:elementId', async (req, res) => {
-    const { elementId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(elementId)) {
-        return res.status(400).json({ message: 'Invalid Element ID' });
-    }
-
-    try {
-        const { attachments, ...updateData } = req.body; // Exclude `attachments` from the update
-
-        const updatedElement = await Element.findByIdAndUpdate(
-            elementId,
-            { $set: updateData }, // Update only the fields provided in `updateData`
-            { new: true, runValidators: true } // Options to return the updated document and run validators
-        );
-
-        if (!updatedElement) {
-            return res.status(404).json({ message: 'Element not found' });
-        }
-
-        res.status(200).json(updatedElement);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Error updating element' });
-    }
-});
-
-// Route pour ajouter une pièce jointe à un élément
-router.post('/:elementId/attachments', upload.single('file'), async (req, res) => {
-    const { elementId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(elementId)) {
-        return res.status(400).json({ message: 'Invalid Element ID' });
-    }
-    try {
-        const element = await Element.findById(elementId);
-        if (!element) {
-            return res.status(404).json({ message: 'Element not found' });
-        }
-
-        const attachment = { filename: req.file.filename, fileId: req.file.id };
-        element.attachments.push(attachment);
-        await element.save();
-
-        res.status(201).json(element);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Error adding attachment' });
-    }
-});
-
-// Route pour supprimer une pièce jointe d'un élément
-router.delete('/:elementId/attachments/:attachmentId', async (req, res) => {
-    const { elementId, attachmentId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(elementId)) {
-        return res.status(400).json({ message: 'Invalid Element ID' });
-    }
-    try {
-        const element = await Element.findById(elementId);
-        if (!element) {
-            return res.status(404).json({ message: 'Element not found' });
-        }
-
-        const attachmentIndex = element.attachments.findIndex(att => att._id.toString() === attachmentId);
-        if (attachmentIndex === -1) {
-            return res.status(404).json({ message: 'Attachment not found' });
-        }
-
-        const [attachment] = element.attachments.splice(attachmentIndex, 1);
-        await element.save();
-
-        // Optionally, remove the file from storage
-        const gridFSBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
-        gridFSBucket.delete(new mongoose.Types.ObjectId(attachment.fileId), (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Error deleting file from GridFS' });
-            }
-        });
-
-        res.status(200).json(element);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Error removing attachment' });
-    }
-});
-
 
 module.exports = router;

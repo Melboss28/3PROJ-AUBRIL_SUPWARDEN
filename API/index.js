@@ -12,12 +12,11 @@ const toolRoutes = require('./routes/toolRoutes');
 const trousseauRoutes = require('./routes/trousseauRoutes');
 const elementRoutes = require('./routes/elementRoutes');
 const upload = require('./upload');
+require('dotenv').config();
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/supwarden', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+//mongoose.connect(`mongodb://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@mongodb:27017/supwarden?authSource=admin`);
+mongoose.connect('mongodb://localhost:27017/supwarden');
 
 const port = 3001;
 const app = express();

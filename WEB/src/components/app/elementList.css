@@ -76,3 +76,70 @@
 .detail {
     color: #757575;
 }
+
+.elementItem .icon {
+    width: 24px;
+    height: 24px;
+    filter: none;
+    margin: 0;
+    margin-right: 40px;
+    vertical-align: bottom;
+}
+
+.memberTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.memberTable th, .memberTable td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.memberTable th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.memberTable td {
+    background-color: #fff;
+}
+
+.memberTable tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+.memberTable tr:hover td {
+    background-color: #f1f1f1;
+}
+
+.memberTable td:empty::before {
+    content: '-';
+    color: #ccc;
+}
+
+.memberItem {
+    padding: 10px;
+}
+
+.memberTable .icon {
+    width: 24px;
+    height: 24px;
+    filter: none;
+    margin: 0;
+    vertical-align: bottom;
+}
+
+.memberTableContainer {
+    max-height: 82%;
+    overflow-y: auto;
+}
+
+.memberTable thead th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}

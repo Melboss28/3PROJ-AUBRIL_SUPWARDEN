@@ -5,7 +5,7 @@ const TrousseauSchema = new mongoose.Schema({
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     members: [{
         user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-        permissions: {type: String, anum: ['read', 'write'], default: 'read'},
+        permissions: {type: String, enum: ['read', 'edit'], default: 'read'},
         invitation: { type: String, enum: ['pending', 'accepted', 'refused'], default: 'pending'}}],
     isShared: { type: Boolean, default: false}
 });

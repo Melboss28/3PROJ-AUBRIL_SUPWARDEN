@@ -72,7 +72,7 @@ const ChatApp = () => {
       }
     } catch (err) {
       console.error("Erreur création conversation :", err);
-      setMessage(err.response.data.message)
+      setMessage(err.response?.data?.message || "Erreur lors de la création de la conversation");
     }
   };
 
@@ -92,11 +92,21 @@ const ChatApp = () => {
             <a className="error">{message}</a>
             <button onClick={createConversation}>Create New Conversation</button>
             <div className="conversations">
-              {conversations.map((conversation) => (
-                <button key={conversation._id} onClick={() => joinRoom(conversation.participants.find(p => p._id !== userId)._id)}>
-                  {conversation.participants.find(p => p._id !== userId).pseudo}
-                </button>
-              ))}
+              {conversations.map((conversation) => {
+                const otherParticipant = conversation.participants.find(p => p._id !== userId);
+
+                // Ensure otherParticipant is found before accessing its properties
+                if (!otherParticipant) {
+                  console.error('No valid participant found in conversation:', conversation);
+                  return null; // or display a placeholder, or handle this case appropriately
+                }
+
+                return (
+                  <button key={conversation._id} onClick={() => joinRoom(otherParticipant._id)}>
+                    {otherParticipant.pseudo}
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div className="chatContainer">

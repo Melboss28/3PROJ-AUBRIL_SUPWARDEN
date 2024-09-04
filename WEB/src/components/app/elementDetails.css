@@ -274,3 +274,14 @@
     align-items: center;
     gap: 0.5rem;
 }
+
+.password-field {
+    display: flex;
+    align-items: center;
+}
+
+.eye-icon {
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+}

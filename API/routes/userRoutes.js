@@ -69,10 +69,12 @@ router.post('/login', async (req, res) => {
             userId: user._id,
             email: user.email,
             pseudo: user.pseudo,
+            googleId: user.googleId,
+            ispin: user.ispin,
         };
 
         // Créer et renvoyer un jeton JWT contenant les informations de l'utilisateur
-       const token = jwt.sign(userInfo, 'ONCzRs3kqu!yF?wH', { expiresIn: '5h' });
+       const token = jwt.sign(userInfo, process.env.JWT_KEY, { expiresIn: '5h' });
         res.json({ token });
     } catch (error) {
         console.error(error);
@@ -163,7 +165,38 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Route pour la connexion via Google
+/**
+ * @swagger
+ * /api/user/google-login:
+ *   post:
+ *     summary: Connexion d'utilisateur via Google
+ *     description: Permet à un utilisateur de se connecter via un token d'authentification Google.
+ *     tags:
+ *       - user
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tokenId
+ *             properties:
+ *               tokenId:
+ *                 type: string
+ *                 description: Token d'authentification Google
+ *     responses:
+ *       200:
+ *         description: Connexion réussie, retour du token JWT.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *       500:
+ *         description: Erreur lors de la connexion Google.
+ */
 router.post('/google-login', async (req, res) => {
     const { tokenId } = req.body;
 
@@ -183,7 +216,7 @@ router.post('/google-login', async (req, res) => {
                 email,
                 pseudo: name,
                 googleId,
-                picture,
+                ispin: false,
             });
 
             await user.save();
@@ -196,8 +229,9 @@ router.post('/google-login', async (req, res) => {
                 email: user.email,
                 pseudo: user.pseudo,
                 googleId: user.googleId,
+                ispin: user.ispin,
             },
-            'ONCzRs3kqu!yF?wH',
+            process.env.JWT_KEY,
             { expiresIn: '5h' }
         );
 
@@ -210,7 +244,37 @@ router.post('/google-login', async (req, res) => {
 
 router.use(authMiddleware); // Appliquer le middleware d'authentification
 
-// Route pour link Google
+/**
+ * @swagger
+ * /api/user/google-link:
+ *   post:
+ *     summary: Lier un compte Google à un utilisateur existant
+ *     description: Permet à un utilisateur de lier son compte Google à son compte existant.
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tokenId
+ *             properties:
+ *               tokenId:
+ *                 type: string
+ *                 description: Token d'authentification Google
+ *     responses:
+ *       200:
+ *         description: Compte Google ajouté avec succès.
+ *       400:
+ *         description: Ce compte Google est déjà lié à un autre utilisateur.
+ *       404:
+ *         description: Utilisateur non trouvé.
+ *       500:
+ *         description: Erreur lors de l'ajout du compte Google.
+ */
 router.post('/google-link', async (req, res) => {
     const { tokenId } = req.body;
     const userId = req.user.userId;
@@ -247,7 +311,26 @@ router.post('/google-link', async (req, res) => {
     }
 });
 
-// Route pour supprimer link Google
+/**
+ * @swagger
+ * /api/user/google-link:
+ *   delete:
+ *     summary: Supprimer le lien entre un utilisateur et son compte Google
+ *     description: Permet à un utilisateur de supprimer le lien entre son compte et son compte Google.
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Compte Google supprimé avec succès.
+ *       400:
+ *         description: Aucun compte Google lié à cet utilisateur.
+ *       404:
+ *         description: Utilisateur non trouvé.
+ *       500:
+ *         description: Erreur lors de la suppression du compte Google.
+ */
 router.delete('/google-link', async (req, res) => {
     const userId = req.user.userId;
 
@@ -576,6 +659,85 @@ router.put('/change-password', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/user/pseudo/{id}:
+ *   get:
+ *     summary: Obtenir le pseudo d'un utilisateur par son ID
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID de l'utilisateur
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Pseudo de l'utilisateur trouvé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 pseudo:
+ *                   type: string
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur lors de la récupération du pseudo
+ */
+router.get('/pseudo/:id', async (req, res) => {
+    try {
+      const user = await User.findOne({ _id: req.params.id });
+      if (user) {
+        res.json({ pseudo: user.pseudo });
+      } else {
+        res.status(404).json({ message: 'User not found' });
+      }
+    } catch (err) {
+      res.status(500).json({ error: 'Error fetching user' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/user/by-pseudo/{pseudo}:
+ *   get:
+ *     summary: Obtenir les détails d'un utilisateur par son pseudo
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: pseudo
+ *         in: path
+ *         required: true
+ *         description: Pseudo de l'utilisateur
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Détails de l'utilisateur trouvés avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 pseudo:
+ *                   type: string
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur lors de la récupération des détails de l'utilisateur
+ */
 router.get('/by-pseudo/:pseudo', async (req, res) => {
     try {
       const user = await User.findOne({ pseudo: req.params.pseudo });
@@ -589,6 +751,40 @@ router.get('/by-pseudo/:pseudo', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/user/conversation:
+ *   post:
+ *     summary: Créer une nouvelle conversation entre deux utilisateurs
+ *     description: Crée une conversation si elle n'existe pas déjà entre les utilisateurs spécifiés.
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - otherUserId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: ID de l'utilisateur connecté
+ *               otherUserId:
+ *                 type: string
+ *                 description: ID de l'autre utilisateur
+ *     responses:
+ *       201:
+ *         description: Conversation créée avec succès
+ *       400:
+ *         description: Conversation déjà existante
+ *       500:
+ *         description: Erreur lors de la création de la conversation
+ */
 router.post('/conversation', async (req, res) => {
     const { userId, otherUserId } = req.body;
 
@@ -615,5 +811,189 @@ router.post('/conversation', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/user/pin:
+ *   put:
+ *     summary: Mettre à jour le PIN d'un utilisateur
+ *     description: Met à jour le PIN de l'utilisateur connecté en vérifiant le mot de passe actuel s'il est défini.
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - pin
+ *             properties:
+ *               pin:
+ *                 type: string
+ *                 description: Nouveau PIN de l'utilisateur
+ *               password:
+ *                 type: string
+ *                 description: Mot de passe actuel pour la vérification (optionnel)
+ *     responses:
+ *       200:
+ *         description: PIN mis à jour avec succès
+ *       400:
+ *         description: Mot de passe incorrect ou PIN non fourni
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur lors de la mise à jour du PIN
+ */
+router.put('/pin', async (req, res) => {
+    const userId = req.user.userId;
+    const { pin, password } = req.body;
+
+    try {
+        // Vérifier si l'utilisateur existe
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+        }
+
+        // Si l'utilisateur a un mot de passe, vérifier le mot de passe
+        if (user.password) {
+            if (!password) {
+                return res.status(400).json({ message: 'Le mot de passe est requis.' });
+            }
+
+            const isValidPassword = await bcrypt.compare(password, user.password);
+            if (!isValidPassword) {
+                return res.status(400).json({ message: 'Mot de passe incorrect.' });
+            }
+        }
+
+        // Hacher le nouveau PIN
+        const hashedPin = await bcrypt.hash(pin, 10);
+
+        // Mettre à jour le PIN haché et le champ ispin
+        user.pin = hashedPin;
+        user.ispin = true;
+        await user.save();
+
+        res.status(200).json({ message: 'PIN mis à jour avec succès.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur lors de la mise à jour du PIN.' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/user/verify-pin:
+ *   post:
+ *     summary: Vérifier le PIN d'un utilisateur
+ *     description: Vérifie si le PIN fourni est correct pour l'utilisateur connecté.
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - pin
+ *             properties:
+ *               pin:
+ *                 type: string
+ *                 description: PIN à vérifier
+ *     responses:
+ *       200:
+ *         description: PIN vérifié avec succès
+ *       400:
+ *         description: PIN incorrect
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur lors de la vérification du PIN
+ */
+router.post('/verify-pin', async (req, res) => {
+    const userId = req.user.userId;
+    const { pin } = req.body;
+
+    try {
+        // Vérifier si l'utilisateur existe
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+        }
+
+        // Vérifier si le PIN est correct
+        const isValidPin = await bcrypt.compare(pin, user.pin);
+        if (!isValidPin) {
+            return res.status(400).json({ message: 'PIN incorrect.' });
+        }
+
+        res.status(200).json({ message: 'PIN vérifié avec succès.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur lors de la vérification du PIN.' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/user/verify-password:
+ *   post:
+ *     summary: Vérifier le mot de passe d'un utilisateur
+ *     description: Vérifie si le mot de passe fourni est correct pour l'utilisateur connecté.
+ *     tags:
+ *       - user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 description: Mot de passe à vérifier
+ *     responses:
+ *       200:
+ *         description: Mot de passe vérifié avec succès
+ *       400:
+ *         description: Mot de passe incorrect
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur lors de la vérification du mot de passe
+ */
+router.post('/verify-password', async (req, res) => {
+    const userId = req.user.userId;
+    const { password } = req.body;
+
+    try {
+        // Vérifier si l'utilisateur existe
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+        }
+
+        // Vérifier si le password est correct
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            return res.status(400).json({ message: 'Mot de passe incorrect.' });
+        }
+
+        res.status(200).json({ message: 'Mot de passe vérifié avec succès.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur lors de la vérification du mot de passe.' });
+    }
+});
 
 module.exports = router; // Exporte le routeur
