@@ -42,28 +42,32 @@ const SensitiveElementModal = ({ onClose }) => {
             onRequestClose={() => onClose(false)}
             contentLabel="Enter PIN or Password"
         >
-            {accountService.getTokenInfo().ispin ? (
-                <>
-                    <h2>Enter your PIN to access this element</h2>
-                    <input
-                        type="password"
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value)}
-                        placeholder="Enter PIN"
-                    />
-                    <button onClick={handlePinSubmit}>Submit</button>
-                </>
-            ) : (
-                <>
-                    <h2>Enter your password to access this element</h2>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter password"
-                    />
-                    <button onClick={handlePasswordSubmit}>Submit</button>
-                </>
+            {accountService.getTokenInfo().ispassword ? (
+                accountService.getTokenInfo().ispin ? (
+                    <>
+                        <h2>Enter your PIN to access this element</h2>
+                        <input
+                            type="password"
+                            value={pin}
+                            onChange={(e) => setPin(e.target.value)}
+                            placeholder="Enter PIN"
+                        />
+                        <button onClick={handlePinSubmit}>Submit</button>
+                    </>
+                ) : (
+                    <>
+                        <h2>Enter your password to access this element</h2>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Enter password"
+                        />
+                        <button onClick={handlePasswordSubmit}>Submit</button>
+                    </>
+                )
+            ):(
+                <h2>Compte créé avec Google. Veuillez créer un mot de passe. Pour déverouiller un élément sensible</h2>
             )}
             {error && <p>{error}</p>}
             <button onClick={() => onClose(false)}>Cancel</button>

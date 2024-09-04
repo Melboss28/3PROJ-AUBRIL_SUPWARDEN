@@ -15,8 +15,8 @@ const upload = require('./upload');
 require('dotenv').config();
 
 // Connect to MongoDB
-//mongoose.connect(`mongodb://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@mongodb:27017/supwarden?authSource=admin`);
-mongoose.connect('mongodb://localhost:27017/supwarden');
+mongoose.connect(`mongodb://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@mongodb:27017/supwarden?authSource=admin`);
+//mongoose.connect('mongodb://localhost:27017/supwarden');
 
 const port = 3001;
 const app = express();
@@ -35,7 +35,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `http://localhost:${port}`,
+                url: `http://localhost:3001`,
                 description: 'Serveur API',
             },
         ],

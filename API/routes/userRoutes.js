@@ -69,6 +69,7 @@ router.post('/login', async (req, res) => {
             userId: user._id,
             email: user.email,
             pseudo: user.pseudo,
+            ispassword: user.ispassword,
             googleId: user.googleId,
             ispin: user.ispin,
         };
@@ -151,7 +152,8 @@ router.post('/register', async (req, res) => {
             _id: new mongoose.Types.ObjectId(),
             email,
             pseudo,
-            password: hashedPassword
+            password: hashedPassword,
+            ispassword: true
         });
 
         // Sauvegarder l'utilisateur dans la base de données
@@ -215,6 +217,7 @@ router.post('/google-login', async (req, res) => {
                 _id: new mongoose.Types.ObjectId(),
                 email,
                 pseudo: name,
+                ispassword: false,
                 googleId,
                 ispin: false,
             });
@@ -228,6 +231,7 @@ router.post('/google-login', async (req, res) => {
                 userId: user._id,
                 email: user.email,
                 pseudo: user.pseudo,
+                ispassword: user.ispassword,
                 googleId: user.googleId,
                 ispin: user.ispin,
             },
@@ -632,11 +636,13 @@ router.put('/change-password', async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'Utilisateur non trouvé.' });
         }
-
-        // Vérifier si le mot de passe actuel est correct
-        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
-        if (!isValidPassword) {
-            return res.status(400).json({ message: 'Mot de passe actuel incorrect.' });
+        //Vérifier si le compte a un mot de passe
+        if (user.password) {
+            // Vérifier si le mot de passe actuel est correct
+            const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+            if (!isValidPassword) {
+                return res.status(400).json({ message: 'Mot de passe actuel incorrect.' });
+            }
         }
 
         // Vérifier que le nouveau mot de passe a au moins 8 caractères

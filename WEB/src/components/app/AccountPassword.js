@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './accountPassword.css';
+import { accountService } from '../../_services/account.service';
 
 const AccountPassword = () => {
     const [passwordData, setPasswordData] = useState({
@@ -41,14 +42,18 @@ const AccountPassword = () => {
             <h2>Modifier Mot de Passe</h2>
             <form onSubmit={handleSubmit} className="AccountPassword-form">
                 <label>Mot de passe actuel</label>
-                <input 
-                    type='password' 
-                    name='currentPassword' 
-                    value={passwordData.currentPassword} 
-                    onChange={handleInputChange} 
-                    placeholder='Mot de passe actuel' 
-                    required 
-                />
+                {accountService.getTokenInfo().ispassword ? (
+                    <input 
+                        type='password' 
+                        name='currentPassword' 
+                        value={passwordData.currentPassword} 
+                        onChange={handleInputChange} 
+                        placeholder='Mot de passe actuel' 
+                        required 
+                    />
+                ):(
+                    <p>Compte créé avec Google. Veuillez créer un mot de passe.</p>
+                )}
                 <label>Nouveau mot de passe</label>
                 <input 
                     type='password' 

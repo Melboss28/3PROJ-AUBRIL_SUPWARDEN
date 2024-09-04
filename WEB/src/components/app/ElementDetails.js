@@ -354,7 +354,7 @@ const ElementDetails = () => {
 
                                 <div className="details-item">
                                     <h3>URIs</h3>
-                                    {element.uris.length > 0 ? (
+                                    {element.uris && element.uris.length > 0 ? (
                                         <ul>
                                             {element.uris.map((uri, index) => (
                                                 <li key={index}>{uri}</li>
@@ -371,7 +371,7 @@ const ElementDetails = () => {
                                 </div>
 
                                 <div className="details-item">
-                                    {element.customFields.length > 0 ? (
+                                    {element.customFields && element.customFields.length > 0 ? (
                                         <div>
                                             {element.customFields.map((field, index) => (
                                                 <div key={index}>

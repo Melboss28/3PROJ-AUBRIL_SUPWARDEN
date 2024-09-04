@@ -34,6 +34,7 @@ const AccountPIN = () => {
     return (
         <div className='AccountPIN'>
             <h2>{accountService.getTokenInfo().ispin ? 'Modifier le PIN' : 'Créer un PIN'}</h2>
+            {accountService.getTokenInfo().ispassword ? (
             <form onSubmit={handleSubmit} className='AccountPIN-form'>
                 <label>Nouveau PIN:</label>
                 <input 
@@ -44,6 +45,7 @@ const AccountPIN = () => {
                     maxLength={6}
                     required 
                 />
+                
                 <label>Mot de passe:</label>
                 <input 
                     type="password" 
@@ -53,7 +55,8 @@ const AccountPIN = () => {
                     required 
                 />
                 <button type="submit">{accountService.getTokenInfo().ispin ? 'Modifier' : 'Créer'}</button>
-            </form>
+            </form>) :(<label>Veuillez d'abord créer un mot de passe.</label>)
+            }
             {message && <p>{message}</p>}
         </div>
     )

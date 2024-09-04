@@ -286,15 +286,141 @@ router.delete('/:elementId', async (req, res) => {
 
         // Suppression des fichiers attachés
         const gfs = await getGFS();
-        for (const attachment of element.attachments) {
-            await gfs.collection('uploads').deleteOne({ _id: mongoose.Types.ObjectId(attachment.fileId) });
+        if (element.attachments && element.attachments.length > 0) {
+            const fileIds = element.attachments.map(att => att.fileId);
+            for (const fileId of fileIds) {
+                await gfs.collection('uploads').deleteOne({ _id: new mongoose.Types.ObjectId(fileId) });
+            }
         }
 
-        await element.remove();
+        await Element.findByIdAndDelete(elementId);
         res.status(200).json({ message: 'Element deleted successfully' });
     } catch (error) {
         console.error('Error deleting element:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Route pour obtenir un élément spécifique
+router.get('/:elementId', async (req, res) => {
+    const { elementId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(elementId)) {
+        return res.status(400).json({ message: 'Invalid Element ID' });
+    }
+
+    try {
+        const element = await Element.findById(elementId);
+        if (!element) {
+            return res.status(404).json({ message: 'Element not found' });
+        }
+
+        if (element.password) {
+            element.password = decrypt(element.password);
+        }
+
+        res.status(200).json(element);
+    } catch (error) {
+        console.error('Error fetching element:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Route pour mettre à jour un élément avec un fichier
+router.put('/:elementId', async (req, res) => {
+    const { elementId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(elementId)) {
+        return res.status(400).json({ error: 'Invalid Element ID' });
+    }
+
+    try {
+        const { attachments, password, ...updateData } = req.body; // Exclude attachments from the update
+
+        if (!updateData.name) {
+            return res.status(400).json({ error: 'Nom requis' });
+        }
+
+        if (password) {
+            updateData.password = encrypt(password);
+        }
+        
+        const updatedElement = await Element.findByIdAndUpdate(
+            elementId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedElement) {
+            return res.status(404).json({ error: 'Element not found' });
+        }
+
+        if (updatedElement.password) {
+            updatedElement.password = decrypt(updatedElement.password);
+        }
+
+        res.status(200).json(updatedElement);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error updating element' });
+    }
+});
+
+// Route pour ajouter une pièce jointe à un élément
+router.post('/:elementId/attachments', upload.single('file'), async (req, res) => {
+    const { elementId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(elementId)) {
+        return res.status(400).json({ message: 'Invalid Element ID' });
+    }
+    try {
+        const element = await Element.findById(elementId);
+        if (!element) {
+            return res.status(404).json({ message: 'Element not found' });
+        }
+
+        const attachment = { filename: req.file.filename, fileId: req.file.id };
+        element.attachments.push(attachment);
+        await element.save();
+
+        res.status(201).json(element);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error adding attachment' });
+    }
+});
+
+// Route pour supprimer une pièce jointe d'un élément
+router.delete('/:elementId/attachments/:attachmentId', async (req, res) => {
+    const { elementId, attachmentId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(elementId)) {
+        return res.status(400).json({ message: 'Invalid Element ID' });
+    }
+    try {
+        const element = await Element.findById(elementId);
+        if (!element) {
+            return res.status(404).json({ message: 'Element not found' });
+        }
+
+        const attachmentIndex = element.attachments.findIndex(att => att._id.toString() === attachmentId);
+        if (attachmentIndex === -1) {
+            return res.status(404).json({ message: 'Attachment not found' });
+        }
+
+        const [attachment] = element.attachments.splice(attachmentIndex, 1);
+        await element.save();
+
+        // Optionally, remove the file from storage
+        const gridFSBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+        gridFSBucket.delete(new mongoose.Types.ObjectId(attachment.fileId), (err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Error deleting file from GridFS' });
+            }
+        });
+
+        res.status(200).json(element);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error removing attachment' });
     }
 });
 
